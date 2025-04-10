@@ -13,7 +13,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from tqdm import tqdm
-from utils import load_and_preprocess_images
+
+from utils import (load_and_preprocess_images, load_preprocessed_data,
+                   save_preprocessed_data)
 
 training_file_path: Path = Path("./brain_tumor_dataset/Training")
 testing_file_path: Path = Path("./brain_tumor_dataset/Testing")
@@ -59,10 +61,16 @@ if __name__ == "__main__":
     print(torch.__version__)
     print(torch.cuda.is_available())
 
-    X_train, y_train, X_test, y_test = load_and_preprocess_images(
-        training_file_path, testing_file_path, categories
-    )
+    # # only run when you need to preprocess the data into numpy arrays
+    # X_train, y_train, X_test, y_test = load_and_preprocess_images(
+    #     training_file_path, testing_file_path, categories
+    # )
+    # save_preprocessed_data(X_train, y_train, X_test, y_test, TRAINING_DATA_PATH)
 
+    # load the data from a file
+    X_train, y_train, X_test, y_test = load_preprocessed_data(TRAINING_DATA_PATH)
+
+    # Loaded data from files
     print("Training Data, Shape:")
     print(X_train.shape)
     # print(X_train[:5])

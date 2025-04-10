@@ -42,3 +42,49 @@ def load_and_preprocess_images(
     y_test = np.array(y_test)
 
     return X_train, y_train, X_test, y_test
+
+
+def save_preprocessed_data(
+    X_train: np.ndarray,
+    y_train: np.ndarray,
+    X_test: np.ndarray,
+    y_test: np.ndarray,
+    save_path: Path = Path("./training_data"),
+) -> None:
+    """
+    Save preprocessed data arrays to files.
+
+    Args:
+        X_train: Training features
+        y_train: Training labels
+        X_test: Testing features
+        y_test: Testing labels
+        save_path: Directory to save the files
+    """
+    print(f"Saving preprocessed data to {save_path}")
+    save_path.mkdir(parents=True, exist_ok=True)
+
+    np.save(save_path / "X_train.npy", X_train)
+    np.save(save_path / "y_train.npy", y_train)
+    np.save(save_path / "X_test.npy", X_test)
+    np.save(save_path / "y_test.npy", y_test)
+
+
+def load_preprocessed_data(
+    load_path: Path = Path("./training_data"),
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Load preprocessed data arrays from files.
+
+    Args:
+        load_path: Directory containing the saved files
+
+    Returns:
+        Tuple containing (X_train, y_train, X_test, y_test)
+    """
+    X_train = np.load(load_path / "X_train.npy")
+    y_train = np.load(load_path / "y_train.npy")
+    X_test = np.load(load_path / "X_test.npy")
+    y_test = np.load(load_path / "y_test.npy")
+
+    return X_train, y_train, X_test, y_test
