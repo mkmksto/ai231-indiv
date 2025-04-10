@@ -117,7 +117,7 @@ if __name__ == "__main__":
     )
 
     # Later, to load the weights into a new model:
-    new_model = TumorClassifier(num_classes=2)
+    new_model = TumorClassifier(num_classes=4)
     new_model = load_model_weights(
         new_model, "./training_data/tumor_classifier_weights.pth"
     )
