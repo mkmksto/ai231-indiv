@@ -173,6 +173,7 @@ if __name__ == "__main__":
         epochs=10,
         val_split=0.2,
         lr=0.001,
+        save_path="./training_data/vgg19_weights.pth",
     )
 
     # ---------------------------------------------------------------------
