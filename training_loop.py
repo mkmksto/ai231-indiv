@@ -23,6 +23,7 @@ from utils import (
     load_model_weights,
     load_preprocessed_data,
     save_preprocessed_data,
+    test_model,
     train_model,
 )
 
@@ -116,12 +117,12 @@ if __name__ == "__main__":
         save_path="./training_data/tumor_classifier_weights.pth",
     )
 
-    # Later, to load the weights into a new model:
-    new_model = TumorClassifier(num_classes=4)
-    new_model = load_model_weights(
-        new_model, "./training_data/tumor_classifier_weights.pth"
-    )
+    # # Later, to load the weights into a new model:
+    # new_model = TumorClassifier(num_classes=4)
+    # new_model = load_model_weights(
+    #     new_model, "./training_data/tumor_classifier_weights.pth"
+    # )
 
     # # Test the model
     # test_loss, test_accuracy = test_model(new_model, test_dataset)
-    # print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")
+    # print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.2f}%")

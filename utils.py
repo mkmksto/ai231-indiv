@@ -374,3 +374,55 @@ def load_preprocessed_data(
     y_test = np.load(load_path / "y_test.npy")
 
     return X_train, y_train, X_test, y_test
+
+
+def test_model(
+    model: nn.Module,
+    test_dataset: torch.utils.data.Dataset,
+    batch_size: int = 32,
+) -> Tuple[float, float]:
+    """
+    Test the model on the test dataset and return loss and accuracy.
+
+    Args:
+        model: The trained model to test
+        test_dataset: The test dataset
+        batch_size: Batch size for testing
+
+    Returns:
+        Tuple containing (test_loss, test_accuracy)
+    """
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    model.eval()  # Set model to evaluation mode
+
+    # Create test data loader
+    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+
+    # Initialize loss function
+    criterion = nn.CrossEntropyLoss()
+
+    total_loss = 0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            # Forward pass
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+
+            # Calculate accuracy
+            _, predicted = torch.max(outputs.data, 1)
+            total += labels.size(0)
+            correct += (predicted == labels).sum().item()
+
+            total_loss += loss.item()
+
+    # Calculate average loss and accuracy
+    avg_loss = total_loss / len(test_loader)
+    accuracy = 100 * correct / total
+
+    return avg_loss, accuracy
