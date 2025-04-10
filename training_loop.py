@@ -13,6 +13,18 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from torchinfo import summary
 from torchvision import datasets, transforms
+
+# from torchvision.models import EfficientNet_B0_Weights, efficientnet_b0
+from torchvision.models import (
+    EfficientNet_B0_Weights,
+    MobileNet_V3_Large_Weights,
+    ResNet50_Weights,
+    VGG19_Weights,
+    efficientnet_b0,
+    mobilenet_v3_large,
+    resnet50,
+    vgg19,
+)
 from tqdm import tqdm
 
 from utils import (
@@ -91,36 +103,100 @@ if __name__ == "__main__":
     print(y_test.shape)
     print(y_test[:5])
 
+    # ---------------------------------------------------------------------
+    # Actual training
+    #
+    #
+    # ---------------------------------------------------------------------
+
     # Encode the labels
     y_train_encoded, y_test_encoded = encode_labels(y_train, y_test)
-
-    model = TumorClassifier(num_classes=4)  # 2 classes for your tumor types
-
-    # Move to GPU if available
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = model.to(device)
-
-    # Define input size: (batch_size, channels, height, width)
-    summary(model, input_size=(1, 3, 224, 224))
-
     train_dataset = TumorDataset(X_train, y_train_encoded)
     test_dataset = TumorDataset(X_test, y_test_encoded)
 
-    # Training and saving weights
+    #
+    # EffNet
+    #
+    model_effnet = TumorClassifier(
+        num_classes=4,
+        pretrained_model=efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1),
+    )  # 2 classes for your tumor types
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_effnet = model_effnet.to(device)
+    summary(model_effnet, input_size=(1, 3, 224, 224))
+
+    # Training and saving weights (effnet)
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
-        model,
+        model_effnet,
         train_dataset,
         batch_size=32,
         epochs=10,
         val_split=0.2,
         lr=0.001,
-        save_path="./training_data/tumor_classifier_weights.pth",
+        save_path="./training_data/effnet_weights.pth",
     )
+
+    #
+    # ResNet
+    #
+    model_resnet = TumorClassifier(
+        num_classes=4,
+        pretrained_model=resnet50(weights=ResNet50_Weights.IMAGENET1K_V1),
+    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_resnet = model_resnet.to(device)
+    # training resnet
+    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+        model_resnet,
+        train_dataset,
+        batch_size=32,
+        epochs=10,
+        val_split=0.2,
+        lr=0.001,
+        save_path="./training_data/resnet_weights.pth",
+    )
+
+    #
+    # VGG19
+    #
+    model_vgg19 = TumorClassifier(
+        num_classes=4,
+        pretrained_model=vgg19(weights=VGG19_Weights.IMAGENET1K_V1),
+    )
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model_vgg19 = model_vgg19.to(device)
+    # training vgg19
+    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+        model_vgg19,
+        train_dataset,
+        batch_size=32,
+        epochs=10,
+        val_split=0.2,
+        lr=0.001,
+    )
+
+    # ---------------------------------------------------------------------
+    # Testing the model
+    #
+    #
+    # ---------------------------------------------------------------------
 
     # # Later, to load the weights into a new model:
     # new_model = TumorClassifier(num_classes=4)
     # new_model = load_model_weights(
-    #     new_model, "./training_data/tumor_classifier_weights.pth"
+    #     new_model, "./training_data/effnet_weights.pth"
+    # )
+
+    # # Later, to load the weights into a new model:
+    # new_model = TumorClassifier(num_classes=4)
+    # new_model = load_model_weights(
+    #     new_model, "./training_data/effnet_weights.pth"
+    # )
+
+    # # Later, to load the weights into a new model:
+    # new_model = TumorClassifier(num_classes=4)
+    # new_model = load_model_weights(
+    #     new_model, "./training_data/effnet_weights.pth"
     # )
 
     # # Test the model

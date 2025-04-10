@@ -14,18 +14,37 @@ from tqdm import tqdm
 
 # Neural Network
 class TumorClassifier(nn.Module):
-    # # sample usage
-    # model = TumorClassifier(num_classes=2)  # 2 classes for your tumor types
+    def __init__(
+        self,
+        num_classes: int = 2,
+        pretrained_model: nn.Module = None,
+        weights: str = None,
+    ):
+        """
+        Initialize the TumorClassifier with a custom pretrained model.
+        Defaults to EfficientNetB0, but can be used with any other model
+        e.g. ResNet, VGG, MobileNet, etc.
 
-    def __init__(self, num_classes=2):  # num_classes=2 for glioma vs meningioma
+        Args:
+            num_classes (int): Number of output classes
+            pretrained_model (nn.Module, optional): Pretrained model to use. If None, defaults to EfficientNetB0
+            weights (str, optional): Weights to load for the pretrained model. If None, uses default weights
+        """
         super(TumorClassifier, self).__init__()
 
-        # Load pretrained EfficientNetB0
-        self.effnet = efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1)
+        # Use provided model or default to EfficientNetB0
+        if pretrained_model is None:
+            self.base_model = efficientnet_b0(
+                weights=EfficientNet_B0_Weights.IMAGENET1K_V1
+            )
+        else:
+            self.base_model = pretrained_model
+            if weights:
+                self.base_model.load_state_dict(torch.load(weights))
 
         # Remove the last layer
-        num_features = self.effnet.classifier[1].in_features
-        self.effnet = nn.Sequential(*list(self.effnet.children())[:-1])
+        num_features = self.base_model.classifier[1].in_features
+        self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
 
         # Add custom classifier
         self.classifier = nn.Sequential(
@@ -39,8 +58,8 @@ class TumorClassifier(nn.Module):
         self.softmax = nn.Softmax(dim=1)
 
     def forward(self, x):
-        # Forward pass through EfficientNet features
-        x = self.effnet(x)
+        # Forward pass through base model features
+        x = self.base_model(x)
         # Forward pass through classifier
         x = self.classifier(x)
         # Apply softmax
