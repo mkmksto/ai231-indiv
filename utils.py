@@ -57,6 +57,10 @@ def train_model(
     lr: float = 0.001,
     save_path: str = "model_weights.pth",  # New parameter for save path
 ):
+    # Set device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
     # # Sample Usage
     # # Usage:
     # train_losses, val_losses, train_accuracies, val_accuracies = train_model(
