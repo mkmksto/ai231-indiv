@@ -1,7 +1,7 @@
 # Individual Project | AI 231
 
 Student: Michael Quinto
-Instructor: Dr. Miguel Remonolona
+Instructor: Dr. Miguel Remolona
 
 # Medical Image Classification
 
