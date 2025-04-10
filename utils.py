@@ -42,11 +42,20 @@ class TumorClassifier(nn.Module):
             if weights:
                 self.base_model.load_state_dict(torch.load(weights))
 
+        # # Get number of features based on model architecture
+        # if hasattr(self.base_model, "classifier"):
+        #     # For EfficientNet, MobileNet
+        #     num_features = self.base_model.classifier[-1].in_features
+        #     self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
+
         # Get number of features based on model architecture
-        if hasattr(self.base_model, "classifier"):
-            # For EfficientNet, MobileNet
+        if isinstance(self.base_model, models.mobilenet.MobileNetV3):
+            # For MobileNetV3
             num_features = self.base_model.classifier[-1].in_features
-            self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
+            # Remove the classifier but keep the avgpool
+            self.base_model = nn.Sequential(
+                self.base_model.features, self.base_model.avgpool, nn.Flatten()
+            )
         elif hasattr(self.base_model, "fc"):
             # For ResNet
             num_features = self.base_model.fc.in_features
