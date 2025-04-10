@@ -114,48 +114,48 @@ if __name__ == "__main__":
     train_dataset = TumorDataset(X_train, y_train_encoded)
     test_dataset = TumorDataset(X_test, y_test_encoded)
 
-    #
-    # EffNet
-    #
-    model_effnet = TumorClassifier(
-        num_classes=4,
-        pretrained_model=efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1),
-    )  # 2 classes for your tumor types
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_effnet = model_effnet.to(device)
-    summary(model_effnet, input_size=(1, 3, 224, 224))
-    print("***** Training EffNet *****")
-    # Training and saving weights (effnet)
-    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
-        model_effnet,
-        train_dataset,
-        batch_size=32,
-        epochs=10,
-        val_split=0.2,
-        lr=0.001,
-        save_path="./training_data/effnet_weights.pth",
-    )
+    # #
+    # # EffNet
+    # #
+    # model_effnet = TumorClassifier(
+    #     num_classes=4,
+    #     pretrained_model=efficientnet_b0(weights=EfficientNet_B0_Weights.IMAGENET1K_V1),
+    # )  # 2 classes for your tumor types
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model_effnet = model_effnet.to(device)
+    # summary(model_effnet, input_size=(1, 3, 224, 224))
+    # print("***** Training EffNet *****")
+    # # Training and saving weights (effnet)
+    # train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+    #     model_effnet,
+    #     train_dataset,
+    #     batch_size=32,
+    #     epochs=10,
+    #     val_split=0.2,
+    #     lr=0.001,
+    #     save_path="./training_data/effnet_weights.pth",
+    # )
 
-    #
-    # ResNet
-    #
-    model_resnet = TumorClassifier(
-        num_classes=4,
-        pretrained_model=resnet50(weights=ResNet50_Weights.IMAGENET1K_V1),
-    )
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_resnet = model_resnet.to(device)
-    print("***** Training ResNet *****")
-    # training resnet
-    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
-        model_resnet,
-        train_dataset,
-        batch_size=32,
-        epochs=10,
-        val_split=0.2,
-        lr=0.001,
-        save_path="./training_data/resnet_weights.pth",
-    )
+    # #
+    # # ResNet
+    # #
+    # model_resnet = TumorClassifier(
+    #     num_classes=4,
+    #     pretrained_model=resnet50(weights=ResNet50_Weights.IMAGENET1K_V1),
+    # )
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model_resnet = model_resnet.to(device)
+    # print("***** Training ResNet *****")
+    # # training resnet
+    # train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+    #     model_resnet,
+    #     train_dataset,
+    #     batch_size=32,
+    #     epochs=10,
+    #     val_split=0.2,
+    #     lr=0.001,
+    #     save_path="./training_data/resnet_weights.pth",
+    # )
 
     #
     # MobileNet
