@@ -93,7 +93,7 @@ if __name__ == "__main__":
     # Encode the labels
     y_train_encoded, y_test_encoded = encode_labels(y_train, y_test)
 
-    model = TumorClassifier(num_classes=2)  # 2 classes for your tumor types
+    model = TumorClassifier(num_classes=4)  # 2 classes for your tumor types
 
     # Move to GPU if available
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
