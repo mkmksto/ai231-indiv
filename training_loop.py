@@ -17,8 +17,10 @@ from tqdm import tqdm
 
 from utils import (
     TumorClassifier,
+    TumorDataset,
     encode_labels,
     load_and_preprocess_images,
+    load_model_weights,
     load_preprocessed_data,
     save_preprocessed_data,
     train_model,
@@ -99,3 +101,27 @@ if __name__ == "__main__":
 
     # Define input size: (batch_size, channels, height, width)
     summary(model, input_size=(1, 3, 224, 224))
+
+    train_dataset = TumorDataset(X_train, y_train_encoded)
+    test_dataset = TumorDataset(X_test, y_test_encoded)
+
+    # Training and saving weights
+    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+        model,
+        train_dataset,
+        batch_size=32,
+        epochs=10,
+        val_split=0.2,
+        lr=0.001,
+        save_path="./training_data/tumor_classifier_weights.pth",
+    )
+
+    # Later, to load the weights into a new model:
+    new_model = TumorClassifier(num_classes=2)
+    new_model = load_model_weights(
+        new_model, "./training_data/tumor_classifier_weights.pth"
+    )
+
+    # # Test the model
+    # test_loss, test_accuracy = test_model(new_model, test_dataset)
+    # print(f"Test Loss: {test_loss:.4f}, Test Accuracy: {test_accuracy:.4f}")

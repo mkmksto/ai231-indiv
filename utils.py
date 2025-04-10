@@ -55,6 +55,7 @@ def train_model(
     epochs: int = 10,
     val_split: float = 0.2,
     lr: float = 0.001,
+    save_path: str = "model_weights.pth",  # New parameter for save path
 ):
     # # Sample Usage
     # # Usage:
@@ -204,7 +205,56 @@ def train_model(
     plt.tight_layout()
     plt.show()
 
+    # At the end of training, after the plotting code:
+    print(f"Saving model weights to {save_path}")
+    torch.save(model.state_dict(), save_path)
+
     return train_losses, val_losses, train_accuracies, val_accuracies
+
+
+def load_model_weights(model: nn.Module, weights_path: str) -> nn.Module:
+    """
+    Load saved weights into a model.
+
+    Args:
+        model: The model to load weights into
+        weights_path: Path to the saved weights file
+
+    Returns:
+        The model with loaded weights
+
+    Sample Usage
+    # Training and saving weights
+    model = TumorClassifier(num_classes=2)
+    train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+        model,
+        train_dataset,
+        batch_size=32,
+        epochs=10,
+        save_path="tumor_classifier_weights.pth"
+    )
+
+    # Later, to load the weights into a new model:
+    new_model = TumorClassifier(num_classes=2)
+    new_model = load_model_weights(new_model, "tumor_classifier_weights.pth")
+    """
+
+    model.load_state_dict(torch.load(weights_path))
+    model.eval()  # Set the model to evaluation mode
+    return model
+
+
+class TumorDataset(torch.utils.data.Dataset):
+    def __init__(self, images, labels):
+        self.images = torch.FloatTensor(images) / 255.0  # Normalize to [0,1]
+        self.images = self.images.permute(0, 3, 1, 2)  # Change to (N, C, H, W)
+        self.labels = torch.LongTensor(labels)
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, idx):
+        return self.images[idx], self.labels[idx]
 
 
 # ------------------------------------------------------------------------------------------------
