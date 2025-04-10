@@ -8,6 +8,7 @@ import torch
 import torch.nn as nn
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, random_split
+from torchvision import models
 from torchvision.models import EfficientNet_B0_Weights, efficientnet_b0
 from tqdm import tqdm
 
