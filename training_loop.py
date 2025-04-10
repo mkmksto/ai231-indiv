@@ -124,7 +124,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_effnet = model_effnet.to(device)
     summary(model_effnet, input_size=(1, 3, 224, 224))
-
+    print("***** Training EffNet *****")
     # Training and saving weights (effnet)
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
         model_effnet,
@@ -145,6 +145,7 @@ if __name__ == "__main__":
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_resnet = model_resnet.to(device)
+    print("***** Training ResNet *****")
     # training resnet
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
         model_resnet,
@@ -165,6 +166,7 @@ if __name__ == "__main__":
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_vgg19 = model_vgg19.to(device)
+    print("**** Training VGG19 ****")
     # training vgg19
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
         model_vgg19,

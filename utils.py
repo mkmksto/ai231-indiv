@@ -42,9 +42,21 @@ class TumorClassifier(nn.Module):
             if weights:
                 self.base_model.load_state_dict(torch.load(weights))
 
-        # Remove the last layer
-        num_features = self.base_model.classifier[1].in_features
-        self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
+        # Get number of features based on model architecture
+        if hasattr(self.base_model, "classifier"):
+            # For EfficientNet, MobileNet
+            num_features = self.base_model.classifier[-1].in_features
+            self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
+        elif hasattr(self.base_model, "fc"):
+            # For ResNet
+            num_features = self.base_model.fc.in_features
+            self.base_model = nn.Sequential(*list(self.base_model.children())[:-2])
+        elif hasattr(self.base_model, "classifier"):
+            # For VGG
+            num_features = self.base_model.classifier[-1].in_features
+            self.base_model = nn.Sequential(*list(self.base_model.children())[:-1])
+        else:
+            raise ValueError("Unsupported model architecture")
 
         # Add custom classifier
         self.classifier = nn.Sequential(
