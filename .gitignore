@@ -1,3 +1,6 @@
+# Large files
+*.npy
+
 # Project-specific files
 # brain_tumor_dataset/
 

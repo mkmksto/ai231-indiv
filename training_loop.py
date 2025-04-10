@@ -11,11 +11,18 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
+from torchinfo import summary
 from torchvision import datasets, transforms
 from tqdm import tqdm
 
-from utils import (load_and_preprocess_images, load_preprocessed_data,
-                   save_preprocessed_data)
+from utils import (
+    TumorClassifier,
+    encode_labels,
+    load_and_preprocess_images,
+    load_preprocessed_data,
+    save_preprocessed_data,
+    train_model,
+)
 
 training_file_path: Path = Path("./brain_tumor_dataset/Training")
 testing_file_path: Path = Path("./brain_tumor_dataset/Testing")
@@ -59,7 +66,7 @@ TRAINING_DATA_PATH = Path("./training_data")
 
 if __name__ == "__main__":
     print(torch.__version__)
-    print(torch.cuda.is_available())
+    print("Cuda Available: ", torch.cuda.is_available())
 
     # # only run when you need to preprocess the data into numpy arrays
     # X_train, y_train, X_test, y_test = load_and_preprocess_images(
@@ -69,7 +76,6 @@ if __name__ == "__main__":
 
     # load the data from a file
     X_train, y_train, X_test, y_test = load_preprocessed_data(TRAINING_DATA_PATH)
-
     # Loaded data from files
     print("Training Data, Shape:")
     print(X_train.shape)
@@ -81,3 +87,15 @@ if __name__ == "__main__":
     # print(X_test[:5])
     print(y_test.shape)
     print(y_test[:5])
+
+    # Encode the labels
+    y_train_encoded, y_test_encoded = encode_labels(y_train, y_test)
+
+    model = TumorClassifier(num_classes=2)  # 2 classes for your tumor types
+
+    # Move to GPU if available
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+
+    # Define input size: (batch_size, channels, height, width)
+    summary(model, input_size=(1, 3, 224, 224))
