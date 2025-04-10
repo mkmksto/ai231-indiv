@@ -158,25 +158,48 @@ if __name__ == "__main__":
     )
 
     #
-    # VGG19
+    # MobileNet
     #
-    model_vgg19 = TumorClassifier(
+    model_mobilenet = TumorClassifier(
         num_classes=4,
-        pretrained_model=vgg19(weights=VGG19_Weights.IMAGENET1K_V1),
+        pretrained_model=mobilenet_v3_large(
+            weights=MobileNet_V3_Large_Weights.IMAGENET1K_V1
+        ),
     )
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model_vgg19 = model_vgg19.to(device)
-    print("**** Training VGG19 ****")
-    # training vgg19
+    model_mobilenet = model_mobilenet.to(device)
+    print("***** Training MobileNet *****")
+    # training mobilenet
     train_losses, val_losses, train_accuracies, val_accuracies = train_model(
-        model_vgg19,
+        model_mobilenet,
         train_dataset,
         batch_size=32,
         epochs=10,
         val_split=0.2,
         lr=0.001,
-        save_path="./training_data/vgg19_weights.pth",
+        save_path="./training_data/mobilenet_weights.pth",
     )
+
+    # #
+    # # VGG19
+    # #
+    # model_vgg19 = TumorClassifier(
+    #     num_classes=4,
+    #     pretrained_model=vgg19(weights=VGG19_Weights.IMAGENET1K_V1),
+    # )
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # model_vgg19 = model_vgg19.to(device)
+    # print("**** Training VGG19 ****")
+    # # training vgg19
+    # train_losses, val_losses, train_accuracies, val_accuracies = train_model(
+    #     model_vgg19,
+    #     train_dataset,
+    #     batch_size=32,
+    #     epochs=10,
+    #     val_split=0.2,
+    #     lr=0.001,
+    #     save_path="./training_data/vgg19_weights.pth",
+    # )
 
     # ---------------------------------------------------------------------
     # Testing the model
