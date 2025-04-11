@@ -33,7 +33,8 @@ class TumorClassifier(nn.Module):
             pretrained_model (nn.Module, optional): Pretrained model to use. If None, defaults to EfficientNetB0
             weights (str, optional): Weights to load for the pretrained model. If None, uses default weights
         """
-        super(TumorClassifier, self).__init__()
+        # super(TumorClassifier, self).__init__()
+        nn.Module.__init__(self)
 
         # Use provided model or default to EfficientNetB0
         if pretrained_model is None:
