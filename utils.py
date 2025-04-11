@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import torch
 import torch.nn as nn
+from sklearn.metrics import classification_report
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, random_split
 from torchvision import models
@@ -421,9 +422,9 @@ def test_model(
     model: nn.Module,
     test_dataset: torch.utils.data.Dataset,
     batch_size: int = 32,
-) -> Tuple[float, float]:
+):
     """
-    Test the model on the test dataset and return loss and accuracy.
+    Test the model on the test dataset and return loss, accuracy, and classification report.
 
     Args:
         model: The trained model to test
@@ -431,7 +432,7 @@ def test_model(
         batch_size: Batch size for testing
 
     Returns:
-        Tuple containing (test_loss, test_accuracy)
+        Tuple containing (test_loss, test_accuracy, classification_report)
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -447,6 +448,10 @@ def test_model(
     correct = 0
     total = 0
 
+    # Lists to store predictions and true labels
+    all_predictions = []
+    all_labels = []
+
     with torch.no_grad():
         for inputs, labels in test_loader:
             inputs, labels = inputs.to(device), labels.to(device)
@@ -460,10 +465,21 @@ def test_model(
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
+            # Store predictions and labels
+            all_predictions.extend(predicted.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+
             total_loss += loss.item()
 
     # Calculate average loss and accuracy
     avg_loss = total_loss / len(test_loader)
     accuracy = 100 * correct / total
 
-    return avg_loss, accuracy
+    report = classification_report(
+        all_labels,
+        all_predictions,
+        target_names=[f"Class {i}" for i in range(len(np.unique(all_labels)))],
+        digits=4,
+    )
+
+    return avg_loss, accuracy, report
