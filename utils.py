@@ -4,9 +4,10 @@ from typing import List, Tuple
 import cv2
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import torch
 import torch.nn as nn
-from sklearn.metrics import classification_report
+from sklearn.metrics import auc, classification_report, confusion_matrix, roc_curve
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader, random_split
 from torchvision import models
@@ -424,7 +425,7 @@ def test_model(
     batch_size: int = 32,
 ):
     """
-    Test the model on the test dataset and return loss, accuracy, and classification report.
+    Test the model on the test dataset and return metrics and data for visualization.
 
     Args:
         model: The trained model to test
@@ -432,7 +433,7 @@ def test_model(
         batch_size: Batch size for testing
 
     Returns:
-        Tuple containing (test_loss, test_accuracy, classification_report)
+        Tuple containing (test_loss, test_accuracy, classification_report, predictions, true_labels, probabilities)
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -451,6 +452,7 @@ def test_model(
     # Lists to store predictions and true labels
     all_predictions = []
     all_labels = []
+    all_probabilities = []
 
     with torch.no_grad():
         for inputs, labels in test_loader:
@@ -461,13 +463,15 @@ def test_model(
             loss = criterion(outputs, labels)
 
             # Calculate accuracy
+            probabilities = outputs.softmax(dim=1)
             _, predicted = torch.max(outputs.data, 1)
             total += labels.size(0)
             correct += (predicted == labels).sum().item()
 
-            # Store predictions and labels
+            # Store predictions, labels and probabilities
             all_predictions.extend(predicted.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
+            all_probabilities.extend(probabilities.cpu().numpy())
 
             total_loss += loss.item()
 
@@ -475,6 +479,12 @@ def test_model(
     avg_loss = total_loss / len(test_loader)
     accuracy = 100 * correct / total
 
+    # Convert lists to numpy arrays
+    all_predictions = np.array(all_predictions)
+    all_labels = np.array(all_labels)
+    all_probabilities = np.array(all_probabilities)
+
+    # Generate classification report
     report = classification_report(
         all_labels,
         all_predictions,
@@ -482,4 +492,94 @@ def test_model(
         digits=4,
     )
 
-    return avg_loss, accuracy, report
+    return avg_loss, accuracy, report, all_predictions, all_labels, all_probabilities
+
+
+def plot_confusion_matrix(true_labels, predictions, class_names=None):
+    """
+    Plot confusion matrix for the model predictions.
+
+    Args:
+        true_labels: True labels from the test set
+        predictions: Model predictions
+        class_names: List of class names (optional)
+    """
+    if class_names is None:
+        class_names = [f"Class {i}" for i in range(len(np.unique(true_labels)))]
+
+    plt.figure(figsize=(10, 8))
+    cm = confusion_matrix(true_labels, predictions)
+    sns.heatmap(
+        cm,
+        annot=True,
+        fmt="d",
+        cmap="Blues",
+        xticklabels=class_names,
+        yticklabels=class_names,
+    )
+    plt.title("Confusion Matrix")
+    plt.xlabel("Predicted")
+    plt.ylabel("True")
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_roc_curves(true_labels, probabilities, class_names=None):
+    """
+    Plot ROC curves for each class.
+
+    Args:
+        true_labels: True labels from the test set
+        probabilities: Model prediction probabilities
+        class_names: List of class names (optional)
+    """
+    if class_names is None:
+        class_names = [f"Class {i}" for i in range(len(np.unique(true_labels)))]
+
+    plt.figure(figsize=(10, 8))
+    for i in range(len(class_names)):
+        fpr, tpr, _ = roc_curve((true_labels == i).astype(int), probabilities[:, i])
+        auc_score = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label=f"{class_names[i]} (AUC = {auc_score:.2f})")
+
+    plt.plot([0, 1], [0, 1], "k--")
+    plt.xlabel("False Positive Rate")
+    plt.ylabel("True Positive Rate")
+    plt.title("ROC Curves")
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+"""
+Sample Usage:
+# 1. Create/load your model
+model = TumorClassifier(num_classes=4)
+model = load_model_weights(model, "path/to/your/saved/weights.pth")
+
+# 2. Create test dataset
+test_dataset = TumorDataset(X_test, y_test)
+
+# 3. Run the test
+test_loss, test_accuracy, classification_report, predictions, true_labels, probabilities = test_model(
+    model=model,
+    test_dataset=test_dataset,
+    batch_size=32
+)
+
+# 4. Print numerical results
+print(f"Test Loss: {test_loss:.4f}")
+print(f"Test Accuracy: {test_accuracy:.2f}%")
+print("\nDetailed Classification Report:")
+print(classification_report)
+
+# 5. Create visualizations
+# You can use your actual class names
+class_names = ["glioma_tumor", "meningioma_tumor", "no_tumor", "pituitary_tumor"]
+
+# Plot confusion matrix
+plot_confusion_matrix(true_labels, predictions, class_names)
+
+# Plot ROC curves
+plot_roc_curves(true_labels, probabilities, class_names)
+"""
